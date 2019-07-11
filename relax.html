@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Relax</title>
+    <style>
+        #canv {
+            border: 2px solid cyan;
+        }
+        
+        button {
+            background-color: rgb(99, 199, 238);
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canv" height="300" width="1200"></canvas>
+    <script>
+        var canv = document.getElementById('canv');
+        var ctx = canv.getContext('2d');
+        //--------components of the game---
+        var myGamePiece;
+        var myObstacles = [];
+        var myScore;
+        //  var myBackground;
+        var myMusic;
+        //-------function which starts the game, we put it on the button START
+        function startGame() {
+            myGameArea.setBG();
+            // myBackground = new Component(2400, 750, 'hell.jpg', 0, 0, 'background');
+            // myGamePiece = new Component(25, 25, "smiley.gif", 10, 150, 'image');
+            myGamePiece = new Component(25, 25, "blue", 10, 150);
+            // myObstacles = new Component(20, 50, 'green', 140, 120);
+            myScore = new Component("30px", "Comic Sans", "blue", 1000, 40, "text");
+            myMusic.play();
+        }
+
+        //--------my game area
+        var myGameArea = {
+                canvas: document.getElementById('canv'),
+                setBG:
+                // Create gradient on background
+                    function() {
+                    var grd = ctx.createLinearGradient(0, 0, 600, 0);
+                    grd.addColorStop(0, 'cyan');
+                    grd.addColorStop(1, 'white');
+                    ctx.fillStyle = grd;
+                    ctx.fillRect(0, 0, 1200, 300);
+                    this.context = this.canvas.getContext("2d");
+                    this.interval = setInterval(updateGameArea, 20);
+                    this.frameNo = 0;
+                    //------- controls---
+                    window.addEventListener('keydown', function(e) {
+                        myGameArea.key = e.keyCode;
+                    })
+                    window.addEventListener('keyup', function(e) {
+                        myGameArea.key = false;
+                    })
+                },
+                clear: function() {
+                    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                    grd = ctx.createLinearGradient(0, 0, 1000, 0);
+                    grd.addColorStop(0, 'cyan');
+                    grd.addColorStop(1, 'white');
+                    ctx.fillStyle = grd;
+                    ctx.fillRect(0, 0, 1200, 300);
+                },
+                stop: function() {
+                    clearInterval(this.interval);
+                    myMusic.stop();
+                    var user = prompt("ВВедите имя");
+                    var score = myGameArea.frameNo;
+
+                    localStorage.setItem('Score', JSON.stringify(user + ':' + score));
+
+                    alert('GAME OVER\nYOUR SCORE --- ' + myGameArea.frameNo);
+                    document.location.reload(); // - это для Chrome
+
+                }
+
+            }
+            //---------conditions for the new obstacles to appear ---------
+        function everyinterval(m) {
+            if ((myGameArea.frameNo / m) % 1 == 0) {
+                return true;
+            }
+            return false;
+        }
+
+        //-----component constructor 
+        function Component(width, height, color, x, y, type) {
+            this.type = type;
+            if (type == "image" || type == "background") {
+                this.image = new Image();
+                this.image.src = color;
+            }
+            this.width = width;
+            this.height = height;
+            this.x = x;
+            this.y = y;
+            this.speedX = 0;
+            this.speedY = 0;
+            this.newPos = function() {
+                    this.x += this.speedX;
+                    this.y += this.speedY;
+                    if (this.type == "background") {
+                        if (this.x == -(this.width)) {
+                            this.x = 0;
+                        }
+                    }
+                    this.hitBottom();
+                    this.hitFloor();
+                }
+                //ctx = myGameArea.context;
+            this.update = function() {
+                    if (this.type == "text") {
+                        ctx.font = this.width + " " + this.height;
+                        ctx.fillStyle = color;
+                        ctx.fillText(this.text, this.x, this.y);
+                    }
+                    if (type == "image" || type == "background") {
+                        ctx.drawImage(this.image,
+                            this.x,
+                            this.y,
+                            this.width, this.height);
+                        if (type == "background") {
+                            ctx.drawImage(this.image, this.x + this.width, this.y, this.width, this.height);
+                        }
+                    } else {
+                        ctx.fillStyle = color;
+                        ctx.fillRect(this.x, this.y, this.width, this.height);
+                    }
+                }
+                // ---------- conditions of collisions 
+            this.crashWith = function(otherobj) {
+                var myleft = this.x;
+                var myright = this.x + (this.width);
+                var mytop = this.y;
+                var mybottom = this.y + (this.height);
+                var otherleft = otherobj.x;
+                var otherright = otherobj.x + (otherobj.width);
+                var othertop = otherobj.y;
+                var otherbottom = otherobj.y + (otherobj.height);
+                var crash = true;
+                if ((mybottom < othertop) ||
+                    (mytop > otherbottom) ||
+                    (myright < otherleft) ||
+                    (myleft > otherright)) {
+                    crash = false;
+                }
+                return crash;
+            }
+            this.hitBottom = function() {
+                var rockbottom = myGameArea.canvas.height - this.height;
+                if (this.y > rockbottom) {
+                    this.y = rockbottom;
+                    this.gravitySpeed = 0;
+                }
+            }
+            this.hitFloor = function() {
+
+                if (this.y < 0) {
+                    this.y = 0;
+                    this.gravitySpeed = 0;
+                }
+            }
+        }
+        //--------we'll do frames ----
+        function updateGameArea() {
+            var x, height, gap, minHeight, maxHeight, minGap, maxGap;
+            var n = myObstacles.length;
+            for (i = 0; i < n; i++) {
+                if (myGamePiece.crashWith(myObstacles[i])) {
+                    myGameArea.stop();
+                    return;
+                }
+            }
+            myGameArea.clear();
+            myGameArea.frameNo += 1;
+            if (myGameArea.frameNo == 1 || everyinterval(150)) {
+                x = myGameArea.canvas.width;
+                minHeight = 20;
+                maxHeight = 200;
+                height = Math.floor(Math.random() * (maxHeight - minHeight + 1) + minHeight);
+                minGap = 50;
+                maxGap = 200;
+                gap = Math.floor(Math.random() * (maxGap - minGap + 1) + minGap);
+                myObstacles.push(new Component(10, height, "green", x, 0));
+                myObstacles.push(new Component(10, x - height - gap, "green", x, height + gap));
+            }
+            //  myBackground.update();
+            for (i = 0; i < n; i += 1) {
+                myObstacles[i].x += -1;
+                myObstacles[i].update();
+            }
+
+            myGamePiece.newPos();
+            myScore.text = "SCORE: " + myGameArea.frameNo;
+            myScore.update();
+
+            myGamePiece.update();
+            //  myBackground.newPos();
+
+            //   myBackground.speedX = -1;
+            // ---------- keyboard controls-----------
+            if (myGameArea.key && myGameArea.key == 37) {
+                myGamePiece.speedX = -2;
+            }
+            if (myGameArea.key && myGameArea.key == 39) {
+                myGamePiece.speedX = 2;
+            }
+            if (myGameArea.key && myGameArea.key == 38) {
+                myGamePiece.speedY = -2;
+            }
+            if (myGameArea.key && myGameArea.key == 40) {
+                myGamePiece.speedY = 2;
+            }
+            document.addEventListener('keyup', stopMove);
+        }
+        //------Music --------
+        function Sound(src) {
+            this.sound = document.createElement("audio");
+            this.sound.src = src;
+            this.sound.setAttribute("preload", "auto", );
+            this.sound.setAttribute("controls", "none");
+            this.sound.style.display = "none";
+            document.body.appendChild(this.sound);
+            this.play = function() {
+
+                this.sound.play();
+                this.sound.setAttribute('loop', true);
+            }
+            this.stop = function() {
+                this.sound.pause();
+            }
+        }
+        myMusic = new Sound('Godot Engine Уроки OST godot_ost.mp3');
+        //------------more controles----
+        function moveup() {
+            myGamePiece.speedY -= 1;
+        }
+
+        function movedown() {
+            myGamePiece.speedY += 1;
+        }
+
+        function moveleft() {
+            myGamePiece.speedX -= 1;
+        }
+
+        function moveright() {
+            myGamePiece.speedX += 1;
+        }
+
+        function stopMove() {
+            myGamePiece.speedX = 0;
+            myGamePiece.speedY = 0;
+        }
+        startGame(); //- не включается музыка с 1го раза и картинка сразу бежит
+        myMusic.play();
+    </script>
+    <br>
+    <button onclick="startGame()">START</button>
+    <!-- <button onmousedown="accelerate(0.05)">ACCELERATE</button>
+    <button onmousedown="moveup()" onmouseup="stopMove()">UP</button>
+    <button onmousedown="movedown()" onmouseup="stopMove()">DOWN</button>
+    <button onmousedown="moveleft()" onmouseup="stopMove()">LEFT</button>
+    <button onmousedown="moveright()" onmouseup="stopMove()">RIGHT</button>-->
+    <button onclick="myMusic.play()">MUSIC ON</button>
+    <button onclick="myMusic.stop()">MUSIC OFF</button>
+
+</body>
+
+</html>
