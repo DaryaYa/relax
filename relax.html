@@ -26,6 +26,7 @@
         var myGamePiece;
         var myObstacles = [];
         var myScore;
+
         //  var myBackground;
         var myMusic;
         //-------function which starts the game, we put it on the button START
@@ -72,12 +73,29 @@
                 stop: function() {
                     clearInterval(this.interval);
                     myMusic.stop();
+
                     var user = prompt("ВВедите имя");
                     var score = myGameArea.frameNo;
 
-                    localStorage.setItem('Score', JSON.stringify(user + ':' + score));
+                    var userScore = [{
+                        'user': user,
+                        'score': score
+                    }];
 
-                    alert('GAME OVER\nYOUR SCORE --- ' + myGameArea.frameNo);
+                    var storedScores = [];
+
+                    if (localStorage.getItem('userScore') == null) {
+                        localStorage['userScore'] = JSON.stringify(userScore);
+                    } else {
+
+                        storedScores = [JSON.parse(localStorage["userScore"])];
+                        storedScores.push(userScore);
+
+                        localStorage['userScore'] = JSON.stringify(storedScores);
+                    }
+
+
+                    alert('GAME OVER\nYOUR SCORE --- ' + score);
                     document.location.reload(); // - это для Chrome
 
                 }
@@ -261,7 +279,7 @@
             myGamePiece.speedY = 0;
         }
         startGame(); //- не включается музыка с 1го раза и картинка сразу бежит
-        myMusic.play();
+        //myMusic.play();
     </script>
     <br>
     <button onclick="startGame()">START</button>
