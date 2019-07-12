@@ -85,10 +85,10 @@
                     var storedScores = [];
 
                     if (localStorage.getItem('userScore') == null) {
-                        localStorage['userScore'] = JSON.stringify(userScore);
+                        localStorage['userScore'] = [JSON.stringify(userScore)];
                     } else {
 
-                        storedScores = [JSON.parse(localStorage["userScore"])];
+                        storedScores = JSON.parse(localStorage["userScore"]);
                         storedScores.push(userScore);
 
                         localStorage['userScore'] = JSON.stringify(storedScores);
