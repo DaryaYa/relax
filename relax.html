@@ -42,66 +42,77 @@
 
         //--------my game area
         var myGameArea = {
-                canvas: document.getElementById('canv'),
-                setBG:
-                // Create gradient on background
-                    function() {
-                    var grd = ctx.createLinearGradient(0, 0, 600, 0);
-                    grd.addColorStop(0, 'cyan');
-                    grd.addColorStop(1, 'white');
-                    ctx.fillStyle = grd;
-                    ctx.fillRect(0, 0, 1200, 300);
-                    this.context = this.canvas.getContext("2d");
-                    this.interval = setInterval(updateGameArea, 20);
-                    this.frameNo = 0;
-                    //------- controls---
-                    window.addEventListener('keydown', function(e) {
-                        myGameArea.key = e.keyCode;
-                    })
-                    window.addEventListener('keyup', function(e) {
-                        myGameArea.key = false;
-                    })
-                },
-                clear: function() {
-                    this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                    grd = ctx.createLinearGradient(0, 0, 1000, 0);
-                    grd.addColorStop(0, 'cyan');
-                    grd.addColorStop(1, 'white');
-                    ctx.fillStyle = grd;
-                    ctx.fillRect(0, 0, 1200, 300);
-                },
-                stop: function() {
-                    clearInterval(this.interval);
-                    myMusic.stop();
-
-                    var user = prompt("ВВедите имя");
-                    var score = myGameArea.frameNo;
-
-                    var userScore = [{
-                        'user': user,
-                        'score': score
-                    }];
-
-                    var storedScores = [];
-
-                    if (localStorage.getItem('userScore') == null) {
-                        localStorage['userScore'] = [JSON.stringify(userScore)];
-                    } else {
-
-                        storedScores = JSON.parse(localStorage["userScore"]);
-                        storedScores.push(userScore);
-
-                        localStorage['userScore'] = JSON.stringify(storedScores);
-                    }
+            canvas: document.getElementById('canv'),
+            setBG:
+            // Create gradient on background
+                function() {
+                var grd = ctx.createLinearGradient(0, 0, 600, 0);
+                grd.addColorStop(0, 'cyan');
+                grd.addColorStop(1, 'white');
+                ctx.fillStyle = grd;
+                ctx.fillRect(0, 0, 1200, 300);
+                this.context = this.canvas.getContext("2d");
+                this.interval = setInterval(updateGameArea, 20);
+                this.frameNo = 0;
+                //------- controls---
+                window.addEventListener('keydown', function(e) {
+                    myGameArea.key = e.keyCode;
+                })
+                window.addEventListener('keyup', function(e) {
+                    myGameArea.key = false;
+                })
+            },
+            clear: function() {
+                this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                grd = ctx.createLinearGradient(0, 0, 1000, 0);
+                grd.addColorStop(0, 'cyan');
+                grd.addColorStop(1, 'white');
+                ctx.fillStyle = grd;
+                ctx.fillRect(0, 0, 1200, 300);
+            },
 
 
-                    alert('GAME OVER\nYOUR SCORE --- ' + score);
-                    document.location.reload(); // - это для Chrome
+
+            stop: function() {
+                clearInterval(this.interval);
+                myMusic.stop();
+
+                var user = prompt("ВВедите имя");
+                var score = myGameArea.frameNo;
+
+                var key = user;
+                var userScore = {};
+                userScore[key] = score;
+
+
+
+
+                if (localStorage.getItem('userScore') == null) {
+                    localStorage['userScore'] = JSON.stringify(userScore);
+                } else {
+
+                    localStorage['userScore'] += (',' + JSON.stringify(userScore));
 
                 }
 
+                // var scoreArray = JSON.parse("[" + localStorage.getItem('userScore') + "]");
+
+
+
+                alert('GAME OVER\nYOUR SCORE --- ' + score);
+                document.location.reload(); // - это для Chrome
             }
-            //---------conditions for the new obstacles to appear ---------
+
+
+
+        }
+
+        // var str =  '{"kkk": 1167}, {"uuu": 1166}, {"u": 1166}, {"dd": 1615}, {"j": 474}, {"kk": 483}'; 	
+        //var str1 = str.split(',');
+        // ["{"kkk": 1167}", " {"uuu": 1166}", " {"u": 1166}", " {"dd": 1615}", " {"j": 474}", " {"kk": 483}"]
+
+
+        //---------conditions for the new obstacles to appear ---------
         function everyinterval(m) {
             if ((myGameArea.frameNo / m) % 1 == 0) {
                 return true;
