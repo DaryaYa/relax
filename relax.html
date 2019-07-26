@@ -5,7 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="jquery-3.4.1.min.js"></script>
     <title>Relax</title>
+    <link rel="shortcut icon" href="icon.ico" type="image/x-icon">
     <style>
         #canv {
             border: 2px solid cyan;
@@ -18,7 +20,7 @@
 </head>
 
 <body>
-    <canvas id="canv" height="300" width="1200"></canvas>
+    <canvas id="canv" height="300" width="1150"></canvas>
     <script>
         var canv = document.getElementById('canv');
         var ctx = canv.getContext('2d');
@@ -26,6 +28,7 @@
         var myGamePiece;
         var myObstacles = [];
         var myScore;
+        var userScore = [];
 
         //  var myBackground;
         var myMusic;
@@ -36,7 +39,7 @@
             // myGamePiece = new Component(25, 25, "smiley.gif", 10, 150, 'image');
             myGamePiece = new Component(25, 25, "blue", 10, 150);
             // myObstacles = new Component(20, 50, 'green', 140, 120);
-            myScore = new Component("30px", "Comic Sans", "blue", 1000, 40, "text");
+            myScore = new Component("30px", "Comic Sans", "blue", 950, 40, "text");
             myMusic.play();
         }
 
@@ -77,40 +80,38 @@
                 clearInterval(this.interval);
                 myMusic.stop();
 
+                var player = {};
+
                 var user = prompt("ВВедите имя");
                 var score = myGameArea.frameNo;
 
-                var key = user;
-                var userScore = {};
-                userScore[key] = score;
+                player.user = user;
+                player.score = score;
 
+                userScore.push(player);
+                userScore.sort((a, b) => b.score - a.score);
 
+                console.log(userScore);
 
-
-                if (localStorage.getItem('userScore') == null) {
-                    localStorage['userScore'] = JSON.stringify(userScore);
-                } else {
-
-                    localStorage['userScore'] += (',' + JSON.stringify(userScore));
-
+                if (localStorage.getItem('userScore') !== null) {
+                    userScore = JSON.parse(localStorage.getItem('userScore'))
                 }
 
-                // var scoreArray = JSON.parse("[" + localStorage.getItem('userScore') + "]");
+                userScore.push(player);
+                userScore.sort((a, b) => b.score - a.score);
 
+                if (userScore.length > 10) {
+                    userScore = userScore.slice(0, 10);
+                }
 
+                localStorage['userScore'] = JSON.stringify(userScore);
 
-                alert('GAME OVER\nYOUR SCORE --- ' + score);
+                alert('GAME OVER\nYOUR SCORE --- ' + score + '\n' + localStorage['userScore']);
                 document.location.reload(); // - это для Chrome
+
             }
 
-
-
         }
-
-        // var str =  '{"kkk": 1167}, {"uuu": 1166}, {"u": 1166}, {"dd": 1615}, {"j": 474}, {"kk": 483}'; 	
-        //var str1 = str.split(',');
-        // ["{"kkk": 1167}", " {"uuu": 1166}", " {"u": 1166}", " {"dd": 1615}", " {"j": 474}", " {"kk": 483}"]
-
 
         //---------conditions for the new obstacles to appear ---------
         function everyinterval(m) {
@@ -267,7 +268,7 @@
                 this.sound.pause();
             }
         }
-        myMusic = new Sound('Godot Engine Уроки OST godot_ost.mp3');
+        myMusic = new Sound('Godot Engine.mp3');
         //------------more controles----
         function moveup() {
             myGamePiece.speedY -= 1;
@@ -290,15 +291,20 @@
             myGamePiece.speedY = 0;
         }
         startGame(); //- не включается музыка с 1го раза и картинка сразу бежит
-        //myMusic.play();
+
+        window.addEventListener('keydown', pauseGame);
+
+        function pauseGame(event) {
+            if (event.keyCode === 32) {
+
+                alert('PAUSE');
+            }
+            return true;
+        }
     </script>
     <br>
     <button onclick="startGame()">START</button>
-    <!-- <button onmousedown="accelerate(0.05)">ACCELERATE</button>
-    <button onmousedown="moveup()" onmouseup="stopMove()">UP</button>
-    <button onmousedown="movedown()" onmouseup="stopMove()">DOWN</button>
-    <button onmousedown="moveleft()" onmouseup="stopMove()">LEFT</button>
-    <button onmousedown="moveright()" onmouseup="stopMove()">RIGHT</button>-->
+
     <button onclick="myMusic.play()">MUSIC ON</button>
     <button onclick="myMusic.stop()">MUSIC OFF</button>
 
