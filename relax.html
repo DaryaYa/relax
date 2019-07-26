@@ -5,9 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <script src="jquery-3.4.1.min.js"></script>
+
     <title>Relax</title>
-    <link rel="shortcut icon" href="icon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <style>
         #canv {
             border: 2px solid cyan;
@@ -16,11 +16,70 @@
         button {
             background-color: rgb(99, 199, 238);
         }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 3;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(146, 140, 142, 0.5)
+        }
+        
+        .modal-content {
+            background-color: rgb(1, 42, 48);
+            border: 1px solid rgb(58, 2, 75);
+            margin: 15% auto;
+            padding: 20px;
+            width: 50%;
+            color: #f0c995;
+            font-size: 24px;
+        }
+        
+        .headOfL {
+            color: #efe1cf;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0 auto;
+        }
+        
+        .row {
+            position: relative;
+            display: block;
+            width: 100%;
+            height: 40px;
+            border-bottom: 1px solid #AFAFAF;
+        }
+        
+        .name {
+            position: relative;
+            display: inline-block;
+            width: 75%;
+            line-height: 45px;
+        }
+        
+        .score {
+            position: relative;
+            display: inline-block;
+            width: 25%;
+        }
     </style>
 </head>
 
 <body>
     <canvas id="canv" height="300" width="1150"></canvas>
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <div class="row">
+                <div class="name">NAMES</div>
+                <div class="score" style="margin: -5px">SCORE</div>
+
+            </div>
+        </div>
+    </div>
     <script>
         var canv = document.getElementById('canv');
         var ctx = canv.getContext('2d');
@@ -88,11 +147,6 @@
                 player.user = user;
                 player.score = score;
 
-                userScore.push(player);
-                userScore.sort((a, b) => b.score - a.score);
-
-                console.log(userScore);
-
                 if (localStorage.getItem('userScore') !== null) {
                     userScore = JSON.parse(localStorage.getItem('userScore'))
                 }
@@ -106,9 +160,56 @@
 
                 localStorage['userScore'] = JSON.stringify(userScore);
 
-                alert('GAME OVER\nYOUR SCORE --- ' + score + '\n' + localStorage['userScore']);
-                document.location.reload(); // - это для Chrome
 
+
+                // ----------------------------MODAL ------------------------------------
+                var modal = document.getElementById('myModal');
+                var modalContent = document.getElementsByClassName('modal-content')[0];
+
+                function modalOpen() {
+                    modal.style.display = 'block';
+                }
+
+
+                function modalClose(event) {
+                    if (event.target == modal) {
+                        modal.style.display = 'none';
+                    }
+                }
+                //------------------ DIVs-----------------
+
+                let elements = [];
+                modalOpen();
+                document.addEventListener('click', modalClose);
+
+                function addScore() {
+
+                    for (var i = 0; i < userScore.length; i++) {
+                        let name = document.createElement("div");
+                        let score = document.createElement("div");
+                        name.classList.add("name");
+                        score.classList.add("score");
+                        name.innerText = userScore[i].user;
+                        score.innerText = userScore[i].score;
+
+                        let scoreRow = document.createElement("div");
+                        scoreRow.classList.add("row");
+                        scoreRow.appendChild(name);
+                        scoreRow.appendChild(score);
+                        modalContent.appendChild(scoreRow);
+
+                        elements.push(scoreRow);
+
+                    }
+                    modal.appendChild(modalContent);
+                    let colors = ["gold", "silver", "#cd7f32"];
+                    for (let i = 0; i < 3; i++) {
+                        elements[i].style.color = colors[i];
+                    }
+                }
+                addScore();
+
+                // document.location.reload(); // - это для Chrome
             }
 
         }
@@ -303,7 +404,7 @@
         }
     </script>
     <br>
-    <button onclick="startGame()">START</button>
+    <button onclick="document.location.reload()">RESTART</button>
 
     <button onclick="myMusic.play()">MUSIC ON</button>
     <button onclick="myMusic.stop()">MUSIC OFF</button>
