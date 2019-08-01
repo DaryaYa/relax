@@ -244,7 +244,7 @@
                         }
                     }
                     this.hitBottom();
-                    this.hitFloor();
+                    this.hitTop();
                 }
                 //ctx = myGameArea.context;
             this.update = function() {
@@ -289,14 +289,14 @@
                 var rockbottom = myGameArea.canvas.height - this.height;
                 if (this.y > rockbottom) {
                     this.y = rockbottom;
-                    this.gravitySpeed = 0;
+                    
                 }
             }
-            this.hitFloor = function() {
+            this.hitTop = function() {
 
                 if (this.y < 0) {
                     this.y = 0;
-                    this.gravitySpeed = 0;
+                   
                 }
             }
         }
